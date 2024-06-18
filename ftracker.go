@@ -11,6 +11,7 @@ const (
 	mInKm     = 1000. // количество метров в километре.
 	minInH    = 60.   // количество минут в часе.
 	kmhInMsec = 0.278 // коэффициент для преобразования км/ч в м/с.
+	cmInm     = 100.  // количество сантиметров в метре
 )
 
 // distance возвращает дистанцию(в километрах), которую преодолел пользователь за время тренировки.
@@ -56,7 +57,7 @@ func ShowTrainingInfo(action int, trainingType string, duration, weight, height 
 		calories := WalkingSpentCalories(action, duration, weight, height)
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
 	case trainingType == "Плавание":
-		distance := swimmingDictance(lengthPool, countPool)
+		distance := (float64(lengthPool) * float64(countPool) / mInKm)
 		speed := swimmingMeanSpeed(lengthPool, countPool, duration)
 		calories := SwimmingSpentCalories(lengthPool, countPool, duration, weight)
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
@@ -99,7 +100,7 @@ const (
 // height float64 — рост пользователя.
 func WalkingSpentCalories(action int, duration, weight, height float64) float64 {
 	// ваш код здесь
-	return ((walkingCaloriesWeightMultiplier*weight + (math.Pow((kmhInMsec*meanSpeed(action, duration)), 2.0)/height)*walkingSpeedHeightMultiplier*weight) * duration * minInH)
+	return ((walkingCaloriesWeightMultiplier*weight + (math.Pow((kmhInMsec*meanSpeed(action, duration)), 2.0)/(height/cmInm))*walkingSpeedHeightMultiplier*weight) * duration * minInH)
 }
 
 // Константы для расчета калорий, расходуемых при плавании.
@@ -107,16 +108,6 @@ const (
 	swimmingCaloriesMeanSpeedShift   = 1.1 // среднее количество сжигаемых колорий при плавании относительно скорости.
 	swimmingCaloriesWeightMultiplier = 2   // множитель веса при плавании.
 )
-
-// swimmingDictance возвращает дистанцию, которую проплыл спортсмен.
-//
-// # Параметры
-//
-// lengthPool int — длина бассейна в метрах.
-// countPool int — сколько раз пользователь переплыл бассейн.
-func swimmingDictance(lengthPool, countPool int) float64 {
-	return float64(lengthPool) * float64(countPool) / mInKm
-}
 
 // swimmingMeanSpeed возвращает среднюю скорость при плавании.
 //
@@ -129,7 +120,7 @@ func swimmingMeanSpeed(lengthPool, countPool int, duration float64) float64 {
 	if duration == 0 {
 		return 0
 	}
-	return swimmingDictance(lengthPool, countPool) / duration
+	return (float64(lengthPool) * float64(countPool) / mInKm) / duration
 }
 
 // SwimmingSpentCalories возвращает количество потраченных калорий при плавании.
